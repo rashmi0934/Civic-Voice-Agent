@@ -1,9 +1,19 @@
 from fastapi import APIRouter
+from pydantic import BaseModel
+
+from app.managers.agent_manager import agent_manager
+
 
 router = APIRouter()
 
-@router.get("/")
-def get_complaints():
-    return {
-        "message": "Complaints endpoint working"
-    }
+
+class ComplaintRequest(BaseModel):
+    complaint: str
+
+
+@router.post("/")
+def submit_complaint(request: ComplaintRequest):
+
+    return agent_manager.submit_complaint(
+        request.complaint
+    )
