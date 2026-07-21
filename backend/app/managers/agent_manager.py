@@ -92,46 +92,35 @@ class AgentManager:
     # -----------------------------
     # Save Complaint
     # -----------------------------
+    
     def save_complaint(
-        self,
-        processed_data: dict,
-        complaint_text: str,
-        db: Session
-    ):
+    self,
+    processed_data: dict,
+    complaint_text: str,
+    db: Session,
+    is_duplicate: str = "No",
+    duplicate_of: int | None = None
+):
 
         complaint = Complaint(
 
             original_text=complaint_text,
 
-            category=processed_data.get(
-                "category",
-                "Unknown"
-            ),
+            category=processed_data["category"],
 
-            urgency=processed_data.get(
-                "urgency",
-                "Unknown"
-            ),
+            urgency=processed_data["urgency"],
 
-            location=processed_data.get(
-                "location",
-                "Unknown"
-            ),
+            location=processed_data["location"],
 
-            affected_people=processed_data.get(
-                "affected_people",
-                "Unknown"
-            ),
+            affected_people=processed_data["affected_people"],
 
-            requested_action=processed_data.get(
-                "action_requested",
-                "Unknown"
-            ),
+            requested_action=processed_data["action_requested"],
 
-            summary=processed_data.get(
-                "summary",
-                ""
-            )
+            summary=processed_data["summary"],
+
+            duplicate=is_duplicate,
+
+            duplicate_of=duplicate_of
 
         )
 
@@ -225,37 +214,28 @@ class AgentManager:
 
             duplicate_data = duplicate.data
 
+            is_duplicate = "No"
+            duplicate_of = None
+
             if duplicate_data.get(
-
                 "is_duplicate",
-
                 False
-
             ):
-
-                return {
-
-                    "success": False,
-
-                    "message":
-                    "Duplicate Complaint",
-
-                    "duplicate":
-                    duplicate_data
-
-                }
+                is_duplicate = "Yes"
+                duplicate_of = duplicate_data.get(
+                    "duplicate_index"
+                )
 
             # =============================
             # STEP 4: SAVE COMPLAINT
             # =============================
 
             complaint = self.save_complaint(
-
-                processed_data,
-
-                complaint_text,
-
-                db
+                processed_data=processed_data,
+                complaint_text=complaint_text,
+                db=db,
+                is_duplicate=is_duplicate,
+                duplicate_of=duplicate_of
 
             )
 
@@ -265,15 +245,17 @@ class AgentManager:
 
             return {
 
-                "success": True,
+            "success": True,
 
-                "complaint_id":
-                complaint.id,
+            "complaint_id": complaint.id,
 
-                "analysis":
-                processed_data
+            "is_duplicate": is_duplicate == "Yes",
 
-            }
+            "duplicate_of": duplicate_of,
+
+            "analysis": processed_data
+
+        }
 
         except Exception as e:
 

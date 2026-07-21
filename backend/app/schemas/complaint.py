@@ -3,8 +3,11 @@ from pydantic import BaseModel
 
 class ComplaintCreate(BaseModel):
 
-    original_text: str
+    complaint_text: str
 
+class ComplaintStatusUpdate(BaseModel):
+
+    status: str
 
 class ComplaintResponse(BaseModel):
 
@@ -20,6 +23,8 @@ class ComplaintResponse(BaseModel):
 
     urgency: str
 
+    status: str
+    
     location: str
 
     affected_people: str | None

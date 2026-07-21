@@ -24,6 +24,8 @@ class Complaint(Base):
 
     urgency = Column(String(50), default="Pending")
 
+    status = Column(String(50),default="Pending")
+    
     location = Column(String(255), default="Unknown")
 
     affected_people = Column(Text)
