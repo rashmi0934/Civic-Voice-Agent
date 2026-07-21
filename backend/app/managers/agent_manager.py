@@ -6,7 +6,7 @@ from app.models.complaint import Complaint
 from app.agents.validation_agent import validation_agent
 from app.agents.processing_agent import processing_agent
 from app.agents.duplicate_agent import duplicate_agent
-
+import time
 
 class AgentManager:
 
@@ -147,13 +147,18 @@ class AgentManager:
             # =============================
             # STEP 1: VALIDATION
             # =============================
+            start = time.time()
 
             validation = self.validate_complaint(
 
                 complaint_text
 
             )
-
+            print(
+                f"Validation took "
+                f"{time.time() - start:.2f} seconds"
+            )
+            
             if not validation.success:
 
                 return validation.to_dict()
@@ -184,11 +189,18 @@ class AgentManager:
             # STEP 2: PROCESSING
             # =============================
 
+            start = time.time()
+
             processed = self.process_complaint(
 
                 complaint_text
 
             )
+
+            print(
+            f"Processing took "
+            f"{time.time() - start:.2f} seconds"
+        )
 
             if not processed.success:
 
@@ -200,12 +212,18 @@ class AgentManager:
             # STEP 3: DUPLICATE DETECTION
             # =============================
 
+            start = time.time()
+
             duplicate = self.detect_duplicate(
 
                 complaint_text,
 
                 db
 
+            )
+            print(
+                f"Duplicate detection took "
+                f"{time.time() - start:.2f} seconds"
             )
 
             if not duplicate.success:
