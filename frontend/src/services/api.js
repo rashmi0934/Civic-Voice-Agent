@@ -157,6 +157,42 @@ export const filterComplaints = async (
 
 };
 
+// =================================
+// Submit voice complaint
+// =================================
+
+export const submitVoiceComplaint = async (
+
+    audioBlob
+
+) => {
+
+    const formData = new FormData();
+
+
+    formData.append(
+
+        "audio",
+
+        audioBlob,
+
+        "voice_complaint.webm"
+
+    );
+
+
+    const response = await api.post(
+
+        "/complaints/voice",
+
+        formData
+
+    );
+
+
+    return response.data;
+
+};
 
 export default api;
 

@@ -1,45 +1,121 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
-import { submitComplaint } from "../services/api";
+import {
+
+    submitComplaint,
+
+    submitVoiceComplaint
+
+} from "../services/api";
 
 
 function CitizenPage() {
 
+
+    // =================================
+    // Text complaint
+    // =================================
+
     const [
+
         complaintText,
+
         setComplaintText
+
     ] = useState("");
 
 
+    // =================================
+    // Result
+    // =================================
+
     const [
+
         result,
+
         setResult
+
     ] = useState(null);
 
 
+    // =================================
+    // Loading
+    // =================================
+
     const [
+
         loading,
+
         setLoading
+
+    ] = useState(false);
+
+
+    // =================================
+    // Error
+    // =================================
+
+    const [
+
+        error,
+
+        setError
+
+    ] = useState("");
+
+
+    // =================================
+    // Voice recording state
+    // =================================
+
+    const [
+
+        isRecording,
+
+        setIsRecording
+
     ] = useState(false);
 
 
     const [
-        error,
-        setError
-    ] = useState("");
+
+        voiceLoading,
+
+        setVoiceLoading
+
+    ] = useState(false);
 
 
-    const handleSubmit = async (event) => {
+    const mediaRecorderRef = useRef(null);
+
+
+    const audioChunksRef = useRef([]);
+
+
+    // =================================
+    // Submit text complaint
+    // =================================
+
+    const handleSubmit = async (
+
+        event
+
+    ) => {
+
 
         event.preventDefault();
 
 
         if (
+
             complaintText.trim() === ""
+
         ) {
 
             setError(
+
                 "Please enter a complaint."
+
             );
 
             return;
@@ -49,6 +125,7 @@ function CitizenPage() {
 
         try {
 
+
             setLoading(true);
 
             setError("");
@@ -57,8 +134,11 @@ function CitizenPage() {
 
 
             const data =
+
                 await submitComplaint(
+
                     complaintText
+
                 );
 
 
@@ -68,18 +148,26 @@ function CitizenPage() {
             setComplaintText("");
 
 
-        } catch (error) {
+        }
+
+        catch (error) {
+
 
             console.error(error);
 
 
             setError(
+
                 "Unable to submit complaint. "
+
                 + "Please try again."
+
             );
 
+        }
 
-        } finally {
+        finally {
+
 
             setLoading(false);
 
@@ -88,220 +176,577 @@ function CitizenPage() {
     };
 
 
+    // =================================
+    // Start voice recording
+    // =================================
+
+    const startRecording = async () => {
+
+
+        try {
+
+
+            setError("");
+
+            setResult(null);
+
+
+            const stream =
+
+                await navigator.mediaDevices
+
+                    .getUserMedia({
+
+                        audio: true
+
+                    });
+
+
+            const mediaRecorder =
+
+                new MediaRecorder(
+
+                    stream
+
+                );
+
+
+            mediaRecorderRef.current =
+
+                mediaRecorder;
+
+
+            audioChunksRef.current = [];
+
+
+            mediaRecorder.ondataavailable = (
+
+                event
+
+            ) => {
+
+
+                if (
+
+                    event.data.size > 0
+
+                ) {
+
+
+                    audioChunksRef.current
+
+                        .push(
+
+                            event.data
+
+                        );
+
+                }
+
+            };
+
+
+            mediaRecorder.onstop = async () => {
+
+
+                const audioBlob =
+
+                    new Blob(
+
+                        audioChunksRef.current,
+
+                        {
+
+                            type:
+
+                                "audio/webm"
+
+                        }
+
+                    );
+
+
+                stream
+
+                    .getTracks()
+
+                    .forEach(
+
+                        (
+
+                            track
+
+                        ) => track.stop()
+
+                    );
+
+
+                await submitVoice(
+
+                    audioBlob
+
+                );
+
+            };
+
+
+            mediaRecorder.start();
+
+
+            setIsRecording(true);
+
+
+        }
+
+        catch (error) {
+
+
+            console.error(error);
+
+
+            setError(
+
+                "Microphone access was denied "
+
+                + "or is unavailable."
+
+            );
+
+        }
+
+    };
+
+
+    // =================================
+    // Stop voice recording
+    // =================================
+
+    const stopRecording = () => {
+
+
+        if (
+
+            mediaRecorderRef.current
+
+        ) {
+
+
+            mediaRecorderRef.current.stop();
+
+
+            setIsRecording(false);
+
+        }
+
+    };
+
+
+    // =================================
+    // Submit voice complaint
+    // =================================
+
+    const submitVoice = async (
+
+        audioBlob
+
+    ) => {
+
+
+        try {
+
+
+            setVoiceLoading(true);
+
+            setError("");
+
+            setResult(null);
+
+
+            const data =
+
+                await submitVoiceComplaint(
+
+                    audioBlob
+
+                );
+
+
+            setResult(data);
+
+
+        }
+
+        catch (error) {
+
+
+            console.error(error);
+
+
+            setError(
+
+                "Unable to process voice complaint. "
+
+                + "Please try again."
+
+            );
+
+        }
+
+        finally {
+
+
+            setVoiceLoading(false);
+
+        }
+
+    };
+
+
     return (
 
-        <div>
+    <div className="citizen-page">
 
-            <h1>
-                Civic Voice
-            </h1>
+        <div className="citizen-container">
 
+            <div className="citizen-header">
 
-            <h2>
-                Submit Your Complaint
-            </h2>
+                <h1>
+                    Civic Voice
+                </h1>
 
+                <p>
+                    Report issues in your community
+                    and help make your city better.
+                </p>
 
-            <form
-                onSubmit={handleSubmit}
-            >
-
-                <textarea
-
-                    value={
-                        complaintText
-                    }
-
-                    onChange={(event) =>
-
-                        setComplaintText(
-                            event.target.value
-                        )
-
-                    }
-
-                    placeholder={
-                        "Describe your complaint..."
-                    }
-
-                    rows="8"
-
-                />
+            </div>
 
 
-                <br />
+            <div className="complaint-card">
+
+                <h2>
+                    Submit Your Complaint
+                </h2>
+
+                <p className="section-description">
+                    Describe the problem you are facing
+                    in your community.
+                </p>
 
 
-                <button
-
-                    type="submit"
-
-                    disabled={loading}
-
+                <form
+                    onSubmit={handleSubmit}
+                    className="complaint-form"
                 >
 
-                    {loading
+                    <textarea
 
-                        ? "Processing..."
+                        value={complaintText}
 
-                        : "Submit Complaint"
+                        onChange={(event) =>
+                            setComplaintText(
+                                event.target.value
+                            )
+                        }
 
-                    }
+                        placeholder={
+                            "Example: There is dirty water "
+                            + "coming from the taps in Sector 25..."
+                        }
 
-                </button>
+                        rows="7"
 
-            </form>
+                        disabled={
+                            loading ||
+                            isRecording ||
+                            voiceLoading
+                        }
+
+                    />
+
+
+                    <button
+
+                        type="submit"
+
+                        className="submit-button"
+
+                        disabled={
+                            loading ||
+                            isRecording ||
+                            voiceLoading
+                        }
+
+                    >
+
+                        {loading
+                            ? "Processing..."
+                            : "Submit Complaint"
+                        }
+
+                    </button>
+
+                </form>
+
+
+                <div className="voice-divider">
+
+                    <span>
+                        OR
+                    </span>
+
+                </div>
+
+
+                <div className="voice-section">
+
+                    <h3>
+                        Submit a Voice Complaint
+                    </h3>
+
+                    <p>
+                        Speak naturally and our AI agents
+                        will analyze your complaint.
+                    </p>
+
+
+                    {!isRecording && (
+
+                        <button
+
+                            type="button"
+
+                            className="voice-button"
+
+                            onClick={
+                                startRecording
+                            }
+
+                            disabled={
+                                loading ||
+                                voiceLoading
+                            }
+
+                        >
+
+                            🎙️ Start Recording
+
+                        </button>
+
+                    )}
+
+
+                    {isRecording && (
+
+                        <button
+
+                            type="button"
+
+                            className="stop-button"
+
+                            onClick={
+                                stopRecording
+                            }
+
+                        >
+
+                            ⏹️ Stop Recording
+
+                        </button>
+
+                    )}
+
+
+                    {isRecording && (
+
+                        <p className="recording-status">
+
+                            🔴 Recording...
+
+                        </p>
+
+                    )}
+
+
+                    {voiceLoading && (
+
+                        <p className="processing-status">
+
+                            🎧 Processing your complaint...
+
+                        </p>
+
+                    )}
+
+                </div>
+
+            </div>
 
 
             {error && (
 
-                <p>
+                <div className="error-message">
 
                     {error}
 
-                </p>
+                </div>
 
             )}
 
 
-            {/* SUCCESSFUL COMPLAINT */}
-
             {result && result.success && (
 
-                <div>
+                <div className="result-card">
 
-                    <h2>
+                    <div className="success-header">
 
-                        Complaint Submitted
-                        Successfully
+                        <span className="success-icon">
+                            ✓
+                        </span>
 
-                    </h2>
+                        <h2>
+                            Complaint Submitted Successfully
+                        </h2>
 
-
-                    <p>
-
-                        Complaint ID:{" "}
-
-                        {
-                            result.complaint_id
-                        }
-
-                    </p>
+                    </div>
 
 
-                    <p>
+                    <div className="complaint-id">
 
-                        Status: Pending
+                        Complaint ID:
 
-                    </p>
+                        <strong>
+
+                            {result.complaint_id}
+
+                        </strong>
+
+                    </div>
+
+
+                    {result.transcribed_text && (
+
+                        <div className="transcription-box">
+
+                            <h3>
+                                Transcribed Voice
+                            </h3>
+
+                            <p>
+                                {result.transcribed_text}
+                            </p>
+
+                        </div>
+
+                    )}
 
 
                     {result.analysis && (
 
-                        <div>
+                        <div className="analysis-section">
 
                             <h3>
-
                                 Complaint Analysis
-
                             </h3>
 
 
-                            <p>
+                            <div className="analysis-grid">
 
-                                <strong>
+                                <div className="analysis-item">
 
-                                    Category:
+                                    <span>
+                                        Category
+                                    </span>
 
-                                </strong>{" "}
+                                    <strong>
+                                        {
+                                            result.analysis.category
+                                        }
+                                    </strong>
 
-                                {
-                                    result.analysis
-                                    .category
-                                }
-
-                            </p>
-
-
-                            <p>
-
-                                <strong>
-
-                                    Urgency:
-
-                                </strong>{" "}
-
-                                {
-                                    result.analysis
-                                    .urgency
-                                }
-
-                            </p>
+                                </div>
 
 
-                            <p>
+                                <div className="analysis-item">
 
-                                <strong>
+                                    <span>
+                                        Urgency
+                                    </span>
 
-                                    Location:
+                                    <strong>
+                                        {
+                                            result.analysis.urgency
+                                        }
+                                    </strong>
 
-                                </strong>{" "}
-
-                                {
-                                    result.analysis
-                                    .location
-                                }
-
-                            </p>
-
-
-                            <p>
-
-                                <strong>
-
-                                    Affected People:
-
-                                </strong>{" "}
-
-                                {
-                                    result.analysis
-                                    .affected_people
-                                }
-
-                            </p>
+                                </div>
 
 
-                            <p>
+                                <div className="analysis-item">
 
-                                <strong>
+                                    <span>
+                                        Location
+                                    </span>
 
-                                    Action Requested:
+                                    <strong>
+                                        {
+                                            result.analysis.location
+                                        }
+                                    </strong>
 
-                                </strong>{" "}
-
-                                {
-                                    result.analysis
-                                    .action_requested
-                                }
-
-                            </p>
+                                </div>
 
 
-                            <p>
+                                <div className="analysis-item">
 
-                                <strong>
+                                    <span>
+                                        Affected People
+                                    </span>
 
-                                    Summary:
+                                    <strong>
+                                        {
+                                            result.analysis.affected_people
+                                        }
+                                    </strong>
 
-                                </strong>{" "}
+                                </div>
 
-                                {
-                                    result.analysis
-                                    .summary
-                                }
+                            </div>
 
-                            </p>
 
+                            <div className="analysis-text">
+
+                                <p>
+
+                                    <strong>
+                                        Action Requested:
+                                    </strong>
+
+                                    {" "}
+
+                                    {
+                                        result.analysis
+                                            .action_requested
+                                    }
+
+                                </p>
+
+
+                                <p>
+
+                                    <strong>
+                                        Summary:
+                                    </strong>
+
+                                    {" "}
+
+                                    {
+                                        result.analysis.summary
+                                    }
+
+                                </p>
+
+                            </div>
 
                         </div>
 
@@ -312,76 +757,18 @@ function CitizenPage() {
             )}
 
 
-            {/* DUPLICATE COMPLAINT */}
-
             {result && !result.success && (
 
-                <div>
+                <div className="duplicate-card">
 
                     <h2>
-
                         Duplicate Complaint
-
                     </h2>
 
-
                     <p>
-
-                        This complaint appears
-                        to have already been
-                        submitted.
-
+                        This complaint appears to have
+                        already been submitted.
                     </p>
-
-
-                    {result.duplicate && (
-
-                        <p>
-
-                            Existing Complaint ID:{" "}
-
-                            {
-                                result.duplicate
-                                .duplicate_index
-                            }
-
-                        </p>
-
-                    )}
-
-
-                    {result.duplicate && (
-
-                        <p>
-
-                            Confidence:{" "}
-
-                            {
-                                (
-                                    result.duplicate
-                                    .confidence * 100
-                                ).toFixed(0)
-                            }%
-
-                        </p>
-
-                    )}
-
-
-                    {result.duplicate && (
-
-                        <p>
-
-                            Reason:{" "}
-
-                            {
-                                result.duplicate
-                                .reason
-                            }
-
-                        </p>
-
-                    )}
 
                 </div>
 
@@ -389,7 +776,9 @@ function CitizenPage() {
 
         </div>
 
-    );
+    </div>
+
+);
 
 }
 
