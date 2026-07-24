@@ -258,8 +258,14 @@ class DashboardService:
             complaint.duplicate_of,
 
             "created_at":
-            str(complaint.created_at)
+            str(complaint.created_at),
 
+            "resolved_at": 
+            (str(complaint.resolved_at)
+            if complaint.resolved_at
+            else None
+
+)
         }
 
 

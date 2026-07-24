@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from datetime import datetime
 
 class ComplaintCreate(BaseModel):
 
@@ -36,6 +36,10 @@ class ComplaintResponse(BaseModel):
     duplicate: str
 
     duplicate_of: int | None
+
+    created_at: datetime
+
+    resolved_at: datetime | None
 
     class Config:
         from_attributes = True

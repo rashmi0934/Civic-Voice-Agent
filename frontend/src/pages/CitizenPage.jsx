@@ -164,12 +164,17 @@ function CitizenPage() {
             )}
 
 
-            {result && (
+            {/* SUCCESSFUL COMPLAINT */}
+
+            {result && result.success && (
 
                 <div>
 
                     <h2>
-                        Complaint Submitted Successfully
+
+                        Complaint Submitted
+                        Successfully
+
                     </h2>
 
 
@@ -177,7 +182,9 @@ function CitizenPage() {
 
                         Complaint ID:{" "}
 
-                        {result.complaint_id}
+                        {
+                            result.complaint_id
+                        }
 
                     </p>
 
@@ -194,18 +201,23 @@ function CitizenPage() {
                         <div>
 
                             <h3>
+
                                 Complaint Analysis
+
                             </h3>
 
 
                             <p>
 
                                 <strong>
+
                                     Category:
+
                                 </strong>{" "}
 
                                 {
-                                    result.analysis.category
+                                    result.analysis
+                                    .category
                                 }
 
                             </p>
@@ -214,11 +226,14 @@ function CitizenPage() {
                             <p>
 
                                 <strong>
+
                                     Urgency:
+
                                 </strong>{" "}
 
                                 {
-                                    result.analysis.urgency
+                                    result.analysis
+                                    .urgency
                                 }
 
                             </p>
@@ -227,11 +242,14 @@ function CitizenPage() {
                             <p>
 
                                 <strong>
+
                                     Location:
+
                                 </strong>{" "}
 
                                 {
-                                    result.analysis.location
+                                    result.analysis
+                                    .location
                                 }
 
                             </p>
@@ -240,7 +258,9 @@ function CitizenPage() {
                             <p>
 
                                 <strong>
+
                                     Affected People:
+
                                 </strong>{" "}
 
                                 {
@@ -254,7 +274,9 @@ function CitizenPage() {
                             <p>
 
                                 <strong>
+
                                     Action Requested:
+
                                 </strong>{" "}
 
                                 {
@@ -268,16 +290,96 @@ function CitizenPage() {
                             <p>
 
                                 <strong>
+
                                     Summary:
+
                                 </strong>{" "}
 
                                 {
-                                    result.analysis.summary
+                                    result.analysis
+                                    .summary
                                 }
 
                             </p>
 
+
                         </div>
+
+                    )}
+
+                </div>
+
+            )}
+
+
+            {/* DUPLICATE COMPLAINT */}
+
+            {result && !result.success && (
+
+                <div>
+
+                    <h2>
+
+                        Duplicate Complaint
+
+                    </h2>
+
+
+                    <p>
+
+                        This complaint appears
+                        to have already been
+                        submitted.
+
+                    </p>
+
+
+                    {result.duplicate && (
+
+                        <p>
+
+                            Existing Complaint ID:{" "}
+
+                            {
+                                result.duplicate
+                                .duplicate_index
+                            }
+
+                        </p>
+
+                    )}
+
+
+                    {result.duplicate && (
+
+                        <p>
+
+                            Confidence:{" "}
+
+                            {
+                                (
+                                    result.duplicate
+                                    .confidence * 100
+                                ).toFixed(0)
+                            }%
+
+                        </p>
+
+                    )}
+
+
+                    {result.duplicate && (
+
+                        <p>
+
+                            Reason:{" "}
+
+                            {
+                                result.duplicate
+                                .reason
+                            }
+
+                        </p>
 
                     )}
 

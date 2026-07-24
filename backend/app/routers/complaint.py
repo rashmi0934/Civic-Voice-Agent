@@ -1,10 +1,17 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
 
+import os
+import tempfile
+
+from app.services.speech_service import speech_service
+
+from datetime import datetime
 from app.managers.agent_manager import agent_manager
 
 from app.schemas.complaint import ComplaintCreate, ComplaintResponse, ComplaintStatusUpdate
 from app.core.database import SessionLocal
 from app.models.complaint import Complaint
+
 
 router = APIRouter()
 
@@ -22,6 +29,151 @@ def submit_complaint(
 
     return result
 
+@router.post("/voice")
+async def submit_voice_complaint(
+
+    audio: UploadFile = File(...)
+
+):
+
+    temporary_file_path = None
+
+
+    try:
+
+        file_extension = (
+
+            os.path.splitext(
+
+                audio.filename
+
+            )[1]
+
+        )
+
+
+        with tempfile.NamedTemporaryFile(
+
+            delete=False,
+
+            suffix=file_extension
+
+        ) as temporary_file:
+
+
+            temporary_file_path = (
+
+                temporary_file.name
+
+            )
+
+
+            contents = await audio.read()
+
+
+            temporary_file.write(
+
+                contents
+
+            )
+
+
+        # -----------------------------
+        # Speech-to-text
+        # -----------------------------
+
+        transcription = (
+
+            speech_service.transcribe(
+
+                temporary_file_path
+
+            )
+
+        )
+
+
+        transcribed_text = (
+
+            transcription["text"]
+
+        )
+
+
+        detected_language = (
+
+            transcription["language"]
+
+        )
+
+
+        if not transcribed_text.strip():
+
+            raise HTTPException(
+
+                status_code=400,
+
+                detail="Could not understand the audio."
+
+            )
+
+
+        # -----------------------------
+        # Existing AI pipeline
+        # -----------------------------
+
+        result = (
+
+            agent_manager.submit_complaint(
+
+                transcribed_text
+
+            )
+
+        )
+
+
+        # Add transcription information
+
+        result["transcribed_text"] = (
+
+            transcribed_text
+
+        )
+
+
+        result["language"] = (
+
+            detected_language
+
+        )
+
+
+        return result
+
+
+    finally:
+
+        if (
+
+            temporary_file_path
+
+            and
+
+            os.path.exists(
+
+                temporary_file_path
+
+            )
+
+        ):
+
+            os.remove(
+
+                temporary_file_path
+
+            )
+        
 
 @router.get(
     "/",
@@ -209,10 +361,10 @@ def update_complaint_status(
 
 
         complaint.status = status_update.status
-
+        if status_update.status == "Resolved":
+            complaint.resolved_at = datetime.now()
 
         db.commit()
-
         db.refresh(complaint)
 
 
