@@ -15,73 +15,88 @@ class DuplicateAgent(BaseAgent):
             "existing_complaints"
         ]
 
+
         existing_text = "\n".join(
 
-            f"{index + 1}. {complaint}"
+            f"Database ID: {complaint['id']}\n"
+            f"Complaint: {complaint['text']}\n"
 
-            for index, complaint
-            in enumerate(existing_complaints)
+            for complaint in existing_complaints
 
         )
 
+
         return f"""
-You are an AI system that detects duplicate civic complaints.
+    You are an AI system that detects duplicate civic complaints.
 
-Your task is to determine whether the NEW COMPLAINT
-describes the same underlying civic problem as any
-of the EXISTING COMPLAINTS.
+    Determine whether the NEW COMPLAINT describes the
+    same underlying civic problem as any EXISTING COMPLAINT.
 
-Consider complaints duplicates when they refer to:
+    A complaint is a duplicate only when the core issue
+    is substantially the same.
 
-- The same problem
-- In the same or nearby location
-- Affecting the same issue or infrastructure
+    Consider:
 
-Examples of duplicates:
+    1. The underlying problem
+    2. The affected infrastructure or service
+    3. The location
+    4. The specific cause or issue
 
-Complaint 1:
-"There is a broken water pipeline in Sector 15."
+    A complaint is NOT a duplicate merely because:
 
-Complaint 2:
-"Water is leaking from the pipeline near Sector 15."
+    - It belongs to the same category
+    - It is in the same city
+    - It concerns the same type of infrastructure
+    - It has similar words
 
-These are likely duplicates.
+    For example:
 
-Do NOT mark complaints as duplicates only because
-they belong to the same category.
+    Existing:
+    "There is a water pipeline leaking in Sector 15."
 
-Return ONLY valid JSON.
+    New:
+    "The water pipeline is still leaking near Sector 15."
 
-Required format:
+    These are duplicates.
 
-{{
-    "is_duplicate": false,
-    "duplicate_index": null,
-    "confidence": 0.0,
-    "reason": ""
-}}
+    However:
 
-Rules:
+    Existing:
+    "There is no water supply in Sector 15."
 
-1. "is_duplicate" must be true or false.
+    New:
+    "There is a broken water pipeline in Sector 22."
 
-2. "duplicate_index" must contain the number of the
-   matching existing complaint if a duplicate exists.
+    These are NOT duplicates because the locations and
+    underlying problems are different.
 
-3. If there is no duplicate, use null.
+    Return ONLY valid JSON.
 
-4. "confidence" must be a number between 0 and 1.
+    Required format:
 
-5. "reason" must briefly explain your decision.
+    {{
+        "is_duplicate": false,
+        "duplicate_index": null,
+        "confidence": 0.0,
+        "reason": ""
+    }}
 
-NEW COMPLAINT:
+    Rules:
 
-{new_complaint}
+    - is_duplicate must be true or false.
+    - duplicate_index must contain the DATABASE ID of the matching complaint.
+    - If there is no duplicate, duplicate_index must be null.
+    - confidence must be between 0 and 1.
+    - reason must briefly explain the decision.
 
-EXISTING COMPLAINTS:
+    NEW COMPLAINT:
 
-{existing_text}
-"""
+    {new_complaint}
+
+    EXISTING COMPLAINTS:
+
+    {existing_text}
+    """
 
     def run(self, input_data: dict):
 

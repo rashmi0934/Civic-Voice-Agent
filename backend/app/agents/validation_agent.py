@@ -7,35 +7,122 @@ class ValidationAgent(BaseAgent):
 
         super().__init__("ValidationAgent")
 
-    def build_prompt(self, complaint: str):
+    def build_prompt(self, input_data: str):
+
+        complaint_text = input_data
 
         return f"""
-You are an AI system that validates citizen complaints.
+    You are a civic complaint validation agent.
 
-Determine whether the following text is:
+    Your task is to determine whether the following user input
+    is a genuine civic complaint or suggestion that should be
+    processed by a local government system.
 
-1. Complaint
-2. Suggestion
-3. Spam
-4. Abuse
-5. Greeting
-6. Irrelevant
+    The input must be classified into exactly one of:
 
-Return ONLY valid JSON.
+    1. Complaint
+    2. Suggestion
+    3. Spam
+    4. Abuse
+    5. Greeting
+    6. Irrelevant
 
-Format:
+    IMPORTANT:
 
-{{
-    "valid": true,
-    "type": "Complaint",
-    "reason": ""
-}}
+    A valid complaint must describe a specific civic problem
+    that could potentially be addressed by a local authority.
 
-Complaint:
+    Examples of valid complaints:
 
-{complaint}
-"""
+    - "There has been no electricity in our village for two days."
+    - "Garbage has not been collected from Street 13 for one week."
+    - "The road near the government school has several large potholes."
 
+    A complaint does NOT need to contain every detail.
+    For example, a complaint may be valid even if it does not
+    mention a location. Missing details will be handled later
+    by the processing stage.
+
+    Reject the input as INVALID if it is:
+
+    1. A vague complaint with no identifiable civic problem.
+
+    Examples:
+
+    - "Everything is terrible."
+    - "The government is useless."
+    - "Nothing works here."
+    - "Please do something."
+
+    2. An angry rant or abuse without a specific civic issue.
+
+    Examples:
+
+    - "You people are completely useless!"
+    - "The government is garbage."
+    - "What kind of idiots are running this place?"
+
+    3. A greeting or casual conversation.
+
+    Examples:
+
+    - "Hello"
+    - "Good morning"
+    - "How are you?"
+
+    4. Spam or meaningless repeated text.
+
+    Examples:
+
+    - "asdfghjkl"
+    - "test test test"
+    - "Buy this product now"
+
+    5. Irrelevant content that is not related to a civic
+    problem or suggestion.
+
+    A valid complaint can contain emotional language,
+    but it must still describe a specific civic problem.
+
+    For example:
+
+    VALID:
+    "The garbage collection is completely pathetic. Garbage
+    has not been collected from our street for two weeks."
+
+    INVALID:
+    "You are all useless and should be fired!"
+
+    The first input describes a specific civic problem.
+    The second is only an angry rant.
+
+    Return ONLY valid JSON.
+    Do not provide explanations outside the JSON.
+
+    Required format:
+
+    {{
+        "valid": true,
+        "type": "Complaint",
+        "reason": ""
+    }}
+
+    Rules:
+
+    - valid must be true or false.
+    - type must be exactly one of:
+    "Complaint", "Suggestion", "Spam", "Abuse",
+    "Greeting", or "Irrelevant".
+    - Set valid to true only for a genuine civic complaint
+    or a constructive civic suggestion.
+    - Set valid to false for vague complaints, angry rants,
+    abuse, spam, greetings, and irrelevant input.
+    - reason must briefly explain the classification.
+
+    INPUT:
+
+    {complaint_text}
+    """
     def run(self, complaint: str):
 
         return self.execute(complaint)
