@@ -7,25 +7,64 @@ class JSONParser:
     @staticmethod
     def extract_json(text: str):
 
-        text = text.replace("```json", "")
-        text = text.replace("```", "")
+        text = text.replace(
+            "```json",
+            ""
+        )
+
+        text = text.replace(
+            "```",
+            ""
+        )
+
         text = text.strip()
 
-        match = re.search(r"\{.*\}", text, re.DOTALL)
 
-        if not match:
-            raise ValueError("No JSON object found.")
+        matches = re.findall(
 
-        return match.group()
+            r"\{(?:[^{}]|(?:\{[^{}]*\}))*\}",
+
+            text,
+
+            re.DOTALL
+
+        )
+
+
+        if not matches:
+
+            raise ValueError(
+
+                "No JSON object found."
+
+            )
+
+
+        return matches[-1]
+
 
     @staticmethod
     def parse(text: str):
 
         try:
 
-            json_text = JSONParser.extract_json(text)
+            json_text = (
 
-            data = json.loads(json_text)
+                JSONParser.extract_json(
+
+                    text
+
+                )
+
+            )
+
+
+            data = json.loads(
+
+                json_text
+
+            )
+
 
             return {
 
@@ -36,6 +75,7 @@ class JSONParser:
                 "error": None
 
             }
+
 
         except Exception as e:
 
@@ -49,13 +89,20 @@ class JSONParser:
 
             }
 
+
     @staticmethod
     def pretty(data):
 
         print(
+
             json.dumps(
+
                 data,
+
                 indent=4,
+
                 ensure_ascii=False
+
             )
+
         )

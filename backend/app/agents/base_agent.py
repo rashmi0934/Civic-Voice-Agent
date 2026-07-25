@@ -11,21 +11,32 @@ class BaseAgent:
 
         self.llm_service = LLMService()
 
+
     def build_prompt(self, input_data):
 
         raise NotImplementedError(
+
             "Child agent must implement build_prompt()"
+
         )
+
 
     def execute(self, input_data):
 
         try:
 
-            prompt = self.build_prompt(input_data)
+            prompt = self.build_prompt(
+
+                input_data
+
+            )
+
 
             raw_response = self.llm_service.generate(prompt)
 
+
             parsed_result = JSONParser.parse(raw_response)
+
 
             # JSONParser returns:
             #
@@ -36,6 +47,7 @@ class BaseAgent:
             # }
             #
             # We only want the actual data here.
+
 
             if not parsed_result["success"]:
 
@@ -51,6 +63,7 @@ class BaseAgent:
 
                 )
 
+
             return AgentResponse(
 
                 success=True,
@@ -62,6 +75,7 @@ class BaseAgent:
                 error=None
 
             )
+
 
         except Exception as e:
 
