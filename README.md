@@ -1,134 +1,199 @@
 # Civic Voice Agent
 
-An AI-powered civic complaint management system that allows citizens to submit complaints through text or voice. The system processes complaints using AI agents and presents structured, actionable information to local leaders through a dashboard.
+An AI-powered civic complaint management system that enables citizens to submit civic complaints through text or voice. The system uses multiple AI agents to validate, analyze, and process complaints before securely storing them and presenting structured insights to authorized local leaders through a dashboard.
+
+---
 
 ## Features
 
+### Citizen Features
+- User registration and login using JWT Authentication
 - Submit complaints through text or voice
 - Voice-to-text transcription using Faster-Whisper
-- Complaint validation
-- Complaint categorization
+- AI-powered complaint validation
+- Automatic complaint categorization
 - Urgency assessment
-- Extraction of location and actionable details
+- Extraction of structured information:
+  - Category
+  - Location
+  - Affected People
+  - Requested Action
+  - Summary
 - Duplicate complaint detection
-- Complaint summary generation
-- Leader dashboard for viewing and managing complaints
-- Complaint status tracking
+- Real-time feedback for invalid or incomplete complaints
 
-## AI Pipeline
+### Leader Features
+- Secure login for authorized users
+- Dashboard with complaint analytics
+- View all complaints
+- Filter complaints by:
+  - Category
+  - Urgency
+  - Status
+- Update complaint status
+- Complaint summary visualization
+
+---
+
+# AI Pipeline
 
 ```text
 Citizen Input
-     ↓
+       │
+       ▼
 Text / Voice
-     ↓
-Speech-to-Text (for voice)
-     ↓
+       │
+       ▼
+Speech-to-Text (Faster-Whisper)
+       │
+       ▼
 Validation Agent
-     ↓
-Duplicate Detection
-     ↓
-Complaint Analysis
-     ↓
-Database
-     ↓
+       │
+       ▼
+Processing Agent
+       │
+       ▼
+Required Field Validation
+       │
+       ▼
+Duplicate Detection Agent
+       │
+       ▼
+Database (MySQL)
+       │
+       ▼
 Leader Dashboard
-
 ```
-## Tech Stack
 
-Backend
+---
+
+# AI Agents
+
+### Validation Agent
+Determines whether the submitted text is a valid civic complaint or suggestion.
+
+Rejects:
+- Greetings
+- Spam
+- Abuse
+- Irrelevant text
+- Vague complaints
+
+---
+
+### Processing Agent
+
+Extracts structured information including:
+
+- Category
+- Urgency
+- Location
+- Affected People
+- Requested Action
+- Summary
+- Keywords
+- Sentiment
+
+The agent does **not hallucinate missing information** and leaves unavailable fields empty.
+
+---
+
+### Duplicate Detection Agent
+
+Compares the incoming complaint with previously submitted complaints using an LLM to determine semantic similarity.
+
+Returns:
+
+- Duplicate or Not
+- Confidence Score
+- Duplicate Complaint ID (if applicable)
+- Reason
+
+---
+
+# Authentication & Authorization
+
+The project uses JWT-based authentication.
+
+Features:
+
+- User Registration
+- Secure Login
+- Password Hashing
+- JWT Access Tokens
+- Protected Complaint APIs
+- Protected Dashboard APIs
+- Role-based authorization ready for extension
+
+---
+
+# Tech Stack
+
+## Backend
+
 - Python
 - FastAPI
 - SQLAlchemy
 - MySQL
 - PyMySQL
+- JWT Authentication
+- Passlib (Password Hashing)
 
-Frontend
+---
+
+## Frontend
+
 - React
 - Vite
 - JavaScript
+- Axios
 - CSS
 
-AI
-- Ollama
-- Qwen3:4B
+---
+
+## AI
+
+- OpenRouter API
+- DeepSeek Chat V3
 - Faster-Whisper
 
-## Setup
-1. Clone the Repository
-```
-git clone <YOUR_REPOSITORY_URL>
-cd Civic-Voice-Agent
-```
-3. Create and Activate a Virtual Environment
-```
-python -m venv venv
-.\venv\Scripts\activate
-```
+---
 
-4. Install Backend Dependencies
-```
-cd backend
-pip install -r requirements.txt
-```
+# Project Structure
 
-5. Configure the Database
-
-Create a MySQL database: ``` CREATE DATABASE civic_voice; ```
-
-Create a .env file inside the backend folder:
-```
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=civic_voice
-```
-
-6. Install the Qwen model:
-```
-ollama pull qwen3:4b
-```
-
-7. Start the Backend
-
-From the backend folder: ``` uvicorn app.main:app --reload ```
-
-Backend: ```http://127.0.0.1:8000 ```
-
-API Documentation: ``` http://127.0.0.1:8000/docs ```
-
-8. Start the Frontend
-
-Open another terminal:
-```
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend:``` http://localhost:5173```
-
-## Project Structure
-```
+```text
 Civic-Voice-Agent/
 │
 ├── backend/
 │   ├── app/
-│   │   ├── agents/
-│   │   ├── core/
-│   │   ├── managers/
-│   │   ├── models/
-│   │   ├── routers/
-│   │   ├── schemas/
-│   │   ├── services/
-│   │   └── utils/
 │   │
+│   ├── agents/
+│   │   ├── validation_agent.py
+│   │   ├── processing_agent.py
+│   │   ├── duplicate_agent.py
+│   │   └── base_agent.py
+│   │
+│   ├── managers/
+│   │   └── agent_manager.py
+│   │
+│   ├── routers/
+│   │   ├── auth.py
+│   │   ├── complaint.py
+│   │   └── dashboard.py
+│   │
+│   ├── models/
+│   ├── schemas/
+│   ├── services/
+│   │   ├── llm_service.py
+│   │   └── whisper_service.py
+│   │
+│   ├── core/
+│   ├── utils/
 │   └── requirements.txt
 │
 ├── frontend/
 │   └── src/
+│       ├── components/
 │       ├── pages/
 │       ├── services/
 │       └── App.jsx
@@ -136,14 +201,177 @@ Civic-Voice-Agent/
 └── README.md
 ```
 
-## Future Improvements
-- Improve multilingual text processing
-- Improve duplicate detection using multilingual embeddings
-- Add confidence scores and human review
-- Move long-running AI operations to background workers
-- Add authentication and role-based access control
-- Add rate limiting and observability
-- Deploy the system to production
+---
 
-## Author
-Rashmi
+# Setup
+
+## 1. Clone the Repository
+
+```bash
+git clone <YOUR_REPOSITORY_URL>
+cd Civic-Voice-Agent
+```
+
+---
+
+## 2. Create Virtual Environment
+
+```bash
+python -m venv venv
+```
+
+Windows
+
+```bash
+.\venv\Scripts\activate
+```
+
+Linux / macOS
+
+```bash
+source venv/bin/activate
+```
+
+---
+
+## 3. Install Backend Dependencies
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+---
+
+## 4. Configure Environment Variables
+
+Create a `.env` file inside the **backend** folder.
+
+```env
+DB_USER=root
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=civic_voice
+
+OPENROUTER_API_KEY=your_openrouter_api_key
+OPENROUTER_MODEL=deepseek/deepseek-chat-v3-0324
+
+```
+
+---
+
+## 5. Create Database
+
+```sql
+CREATE DATABASE civic_voice;
+```
+
+---
+
+## 6. Start Backend
+
+```bash
+cd backend
+
+uvicorn app.main:app --reload
+```
+
+Backend
+
+```
+http://127.0.0.1:8000
+```
+
+Swagger API
+
+```
+http://127.0.0.1:8000/docs
+```
+
+---
+
+## 7. Start Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
+
+Frontend
+
+```
+http://localhost:5173
+```
+
+---
+
+# API Endpoints
+
+## Authentication
+
+- POST `/auth/register`
+- POST `/auth/login`
+
+---
+
+## Complaints
+
+- POST `/complaints/`
+- GET `/complaints/`
+- GET `/complaints/{id}`
+- PATCH `/complaints/{id}/status`
+- POST `/complaints/voice`
+
+---
+
+## Dashboard
+
+- GET `/dashboard/summary`
+
+---
+
+# Validation Rules
+
+The system automatically rejects:
+
+- Greetings
+- Spam
+- Abuse without civic issue
+- Irrelevant content
+- Duplicate complaints
+- Complaints with missing mandatory information (e.g., location)
+
+---
+
+# Security
+
+- JWT Authentication
+- Password Hashing
+- Protected APIs
+- Authorization Middleware
+
+---
+
+# Future Improvements
+
+- Multilingual complaint processing
+- Embedding-based duplicate detection
+- Human review workflow
+- Background task queue
+- Email/SMS notifications
+- Admin analytics dashboard
+- Docker support
+- Cloud deployment (AWS / Azure / Render)
+- CI/CD pipeline
+
+---
+
+# Author
+
+**Rashmi**
+
+B.Tech Mathematics & Computing, IIT Delhi
