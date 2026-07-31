@@ -319,6 +319,49 @@ class AgentManager:
 
             processed_data = processed.data
 
+            # =============================
+            # LOCATION CHECK
+            # =============================
+
+            location = str(
+                processed_data.get("location", "")
+            ).strip().lower()
+
+            invalid_locations = [
+                "",
+                "unknown",
+                "not provided",
+                "not specified",
+                "none",
+                "null",
+                "my area",
+                "our area",
+                "this area",
+                "local area",
+                "area",
+                "nearby",
+                "here",
+                "there"
+            ]
+
+            if location in invalid_locations:
+
+                return {
+
+                    "success": False,
+
+                    "message":
+                    "Complaint not submitted.",
+
+                    "missing_fields": [
+                        "location"
+                    ],
+
+                    "reason":
+                    "Please provide a specific location (e.g., Sector 12, MG Road, Village Rampur)."
+
+                }
+
 
             # =============================
             # STEP 3: REQUIRED FIELD CHECK
@@ -364,6 +407,23 @@ class AgentManager:
 
                 )
 
+                invalid_values = [
+                    "unknown",
+                    "not provided",
+                    "not specified",
+                    "none",
+                    "null",
+                    "my area",
+                    "area",
+                    "nearby",
+                    "here",
+                    "there",
+                    "our area",
+                    "my area",
+                    "this area",
+                    "local area"
+                ]
+
 
                 if (
 
@@ -375,29 +435,11 @@ class AgentManager:
 
                     or
 
-                    str(value).lower()
-
-                    in [
-
-                        "unknown",
-
-                        "not provided",
-
-                        "not specified",
-
-                        "none",
-
-                        "null"
-
-                    ]
+                    str(value).lower().strip() in invalid_values
 
                 ):
 
-                    missing_fields.append(
-
-                        display_name
-
-                    )
+                    missing_fields.append(display_name)
 
 
             if missing_fields:
@@ -416,8 +458,7 @@ class AgentManager:
 
                     "reason":
 
-                    "Important information is missing."
-
+                    f"Missing required information: {', '.join(missing_fields)}"
                 }
 
 

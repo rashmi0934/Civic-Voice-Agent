@@ -3,11 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import engine, Base
 from app.routers.complaint import router as complaint_router
+from app.routers.auth import router as auth_router
 
 from app.routers.dashboard import router as dashboard_router
 
 app = FastAPI(
     title="Civic Voice Agent"
+)
+
+app.include_router(
+    auth_router,
+    prefix="/auth",
+    tags=["Authentication"]
 )
 
 app.add_middleware(

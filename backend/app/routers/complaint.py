@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import Depends
+from app.core.dependencies import get_current_user
 
 import os
 import tempfile
@@ -18,7 +20,8 @@ router = APIRouter()
 
 @router.post("/")
 def submit_complaint(
-    complaint: ComplaintCreate
+    complaint: ComplaintCreate,
+    current_user=Depends(get_current_user)
 ):
 
     result = agent_manager.submit_complaint(
@@ -31,9 +34,8 @@ def submit_complaint(
 
 @router.post("/voice")
 async def submit_voice_complaint(
-
-    audio: UploadFile = File(...)
-
+    audio: UploadFile = File(...),
+    current_user=Depends(get_current_user)
 ):
 
     temporary_file_path = None
@@ -179,7 +181,9 @@ async def submit_voice_complaint(
     "/",
     response_model=list[ComplaintResponse]
 )
-def get_all_complaints():
+def get_all_complaints(
+    current_user=Depends(get_current_user)
+):
 
     db = SessionLocal()
 
@@ -203,6 +207,7 @@ def get_all_complaints():
     "/filter"
 )
 def filter_complaints(
+    current_user=Depends(get_current_user),
 
     status: str | None = None,
 
@@ -267,7 +272,8 @@ def filter_complaints(
     response_model=ComplaintResponse
 )
 def get_complaint(
-    complaint_id: int
+    complaint_id: int,
+    current_user=Depends(get_current_user)
 ):
 
     db = SessionLocal()
@@ -306,7 +312,9 @@ def update_complaint_status(
 
     complaint_id: int,
 
-    status_update: ComplaintStatusUpdate
+    status_update: ComplaintStatusUpdate,
+
+    current_user=Depends(get_current_user)
 
 ):
 

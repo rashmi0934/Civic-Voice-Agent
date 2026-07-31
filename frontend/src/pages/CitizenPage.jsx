@@ -1,16 +1,36 @@
 import { useState, useRef } from "react";
-
-import {
-
-    submitComplaint,
-
-    submitVoiceComplaint
-
-} from "../services/api";
+import { useNavigate } from "react-router-dom";
+import {submitComplaint,submitVoiceComplaint} from "../services/api";
 
 
 function CitizenPage() {
 
+     // =================================
+    // Navigation
+    // =================================
+
+    const navigate = useNavigate();
+    const [showProfile, setShowProfile] = useState(false);
+    const token = localStorage.getItem("token");
+
+    let user = {
+        name:"",
+        email: "",
+        role: "citizen"
+    };
+
+    if (token) {
+        try {
+            user = JSON.parse(
+                atob(token.split(".")[1])
+            );
+        } catch (e) {}
+    }
+
+    const logout = () => {
+        localStorage.removeItem("token");
+        navigate("/login");
+    };
 
     // =================================
     // Text complaint
@@ -406,9 +426,146 @@ function CitizenPage() {
 
     <div className="citizen-page">
 
-        <div className="citizen-container">
+    <div className="citizen-container">
 
-            <div className="citizen-header">
+        <div
+            style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: "20px",
+                position: "relative",
+                overflow: "visible"
+            }}
+        >
+
+            <div
+                style={{
+                    position: "relative"
+                }}
+            >
+
+                <div
+                    onClick={() => setShowProfile(!showProfile)}
+                    style={{
+                        width: "48px",
+                        height: "48px",
+                        borderRadius: "50%",
+                        background: "#2563eb",
+                        color: "white",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        boxShadow: "0 4px 12px rgba(0,0,0,.25)"
+                    }}
+                >
+                    👤
+                </div>
+
+                {showProfile && (
+
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: "60px",
+                            right: 0,
+                            width: "300px",
+                            background: "#ffffff",
+                            borderRadius: "12px",
+                            boxShadow: "0 10px 30px rgba(0,0,0,.2)",
+                            border: "1px solid #ddd",
+                            padding: "20px",
+                            zIndex: 9999
+                        }}
+                    >
+
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                marginBottom: "15px"
+                            }}
+                        >
+
+                            <div
+                                style={{
+                                    width: "70px",
+                                    height: "70px",
+                                    borderRadius: "50%",
+                                    background: "#2563eb",
+                                    color: "white",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    fontSize: "30px",
+                                    marginBottom: "12px"
+                                }}
+                            >
+                                👤
+                            </div>
+
+                            <h3
+                                style={{
+                                    margin: 0
+                                }}
+                            >
+                                {user.name || "Citizen"}
+                            </h3>
+
+                            <p
+                                style={{
+                                    margin: "8px 0",
+                                    color: "#666",
+                                    textAlign: "center",
+                                    wordBreak: "break-word"
+                                }}
+                            >
+                                {user.email}
+                            </p>
+
+                            <span
+                                style={{
+                                    background: "#e3f2fd",
+                                    color: "#1565c0",
+                                    padding: "4px 12px",
+                                    borderRadius: "20px",
+                                    fontSize: "14px"
+                                }}
+                            >
+                                {user.role}
+                            </span>
+
+                        </div>
+
+                        <button
+                            onClick={logout}
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                background: "#ef4444",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                fontWeight: "bold"
+                            }}
+                        >
+                            Logout
+                        </button>
+
+                    </div>
+
+                )}
+
+            </div>
+
+        </div>    
+
+        <div className="citizen-header">
 
                 <h1>
                     Civic Voice
@@ -759,16 +916,53 @@ function CitizenPage() {
 
             {result && !result.success && (
 
-                <div className="duplicate-card">
+                <div className="error-card">
 
                     <h2>
-                        Duplicate Complaint
+
+                        {
+                            result.is_duplicate
+                                ? "Duplicate Complaint"
+                                : "Complaint Submission Failed"
+                        }
+
                     </h2>
 
                     <p>
-                        This complaint appears to have
-                        already been submitted.
+
+                        {
+                            result.reason ||
+                            result.message ||
+                            "Unable to submit complaint."
+                        }
+
                     </p>
+
+                    {result.missing_fields && (
+
+                        <div>
+
+                            <strong>
+                                Missing Information:
+                            </strong>
+
+                            <ul>
+
+                                {result.missing_fields.map((field) => (
+
+                                    <li key={field}>
+
+                                        {field}
+
+                                    </li>
+
+                                ))}
+
+                            </ul>
+
+                        </div>
+
+                    )}
 
                 </div>
 

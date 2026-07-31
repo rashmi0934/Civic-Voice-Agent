@@ -1,127 +1,168 @@
 import axios from "axios";
 
-
 const api = axios.create({
-
     baseURL: "http://127.0.0.1:8000"
-
 });
 
+// Automatically attach JWT token
+api.interceptors.request.use((config) => {
+
+    const token = localStorage.getItem("token");
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
 
 // =================================
-// Submit a new complaint
+// Register
 // =================================
 
-export const submitComplaint = async (
+export const register = async (userData) => {
 
-    complaintText
+    const response = await api.post(
+        "/auth/register",
+        userData
+    );
 
-) => {
+    return response.data;
+};
+
+// =================================
+// Login
+// =================================
+
+export const login = async (email, password) => {
+
+    const formData = new URLSearchParams();
+
+    formData.append("username", email);
+    formData.append("password", password);
 
     const response = await api.post(
 
-        "/complaints/",
+        "/auth/login",
+
+        formData,
 
         {
 
-            complaint_text:
-            complaintText
+            headers: {
+
+                "Content-Type": "application/x-www-form-urlencoded"
+
+            }
 
         }
 
+    );
+
+    localStorage.setItem(
+        "token",
+        response.data.access_token
+    );
+
+    return response.data;
+};
+
+
+// =================================
+// Logout
+// =================================
+
+export const logout = () => {
+
+    localStorage.removeItem("token");
+
+};
+
+// =================================
+// Submit Complaint
+// =================================
+
+export const submitComplaint = async (
+    complaintText
+) => {
+
+    const response = await api.post(
+        "/complaints/",
+        {
+            complaint_text: complaintText
+        }
     );
 
     return response.data;
 
 };
 
-
 // =================================
-// Get dashboard summary
+// Dashboard Summary
 // =================================
 
 export const getDashboardSummary = async () => {
 
     const response = await api.get(
-
         "/dashboard/summary"
-
     );
 
     return response.data;
 
 };
 
-
 // =================================
-// Get all complaints
+// Get All Complaints
 // =================================
 
 export const getAllComplaints = async () => {
 
     const response = await api.get(
-
         "/complaints/"
-
     );
 
     return response.data;
 
 };
 
-
 // =================================
-// Get a single complaint
+// Get Single Complaint
 // =================================
 
 export const getComplaint = async (
-
     complaintId
-
 ) => {
 
     const response = await api.get(
-
         `/complaints/${complaintId}`
-
     );
 
     return response.data;
 
 };
 
-
 // =================================
-// Update complaint status
+// Update Complaint Status
 // =================================
 
 export const updateComplaintStatus = async (
-
     complaintId,
-
     status
-
 ) => {
 
     const response = await api.patch(
-
         `/complaints/${complaintId}/status`,
-
         {
-
-            status: status
-
+            status
         }
-
     );
 
     return response.data;
 
 };
 
-
 // =================================
-// Filter complaints
+// Filter Complaints
 // =================================
 
 export const filterComplaints = async (
@@ -131,26 +172,14 @@ export const filterComplaints = async (
 ) => {
 
     const response = await api.get(
-
         "/complaints/filter",
-
         {
-
             params: {
-
-                status:
-                    status || undefined,
-
-                category:
-                    category || undefined,
-
-                urgency:
-                    urgency || undefined
-
+                status: status || undefined,
+                category: category || undefined,
+                urgency: urgency || undefined
             }
-
         }
-
     );
 
     return response.data;
@@ -158,41 +187,28 @@ export const filterComplaints = async (
 };
 
 // =================================
-// Submit voice complaint
+// Voice Complaint
 // =================================
 
 export const submitVoiceComplaint = async (
-
     audioBlob
-
 ) => {
 
     const formData = new FormData();
 
-
     formData.append(
-
         "audio",
-
         audioBlob,
-
         "voice_complaint.webm"
-
     );
-
 
     const response = await api.post(
-
         "/complaints/voice",
-
         formData
-
     );
-
 
     return response.data;
 
 };
 
 export default api;
-

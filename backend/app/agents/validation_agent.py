@@ -16,7 +16,8 @@ class ValidationAgent(BaseAgent):
 
     Your task is to determine whether the following user input
     is a genuine civic complaint or suggestion that should be
-    processed by a local government system.
+    processed by a local government system. you are also going to reject a probelm if it did't sprecified the ;ocation 
+    of the problem.
 
     The input must be classified into exactly one of:
 
@@ -34,7 +35,7 @@ class ValidationAgent(BaseAgent):
 
     Examples of valid complaints:
 
-    - "There has been no electricity in our village for two days."
+    - "There has been no electricity in village for two days."
     - "Garbage has not been collected from Street 13 for one week."
     - "The road near the government school has several large potholes."
 

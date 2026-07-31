@@ -1,57 +1,57 @@
-import {
-    BrowserRouter,
-    Routes,
-    Route,
-    Link
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import CitizenPage from "./pages/CitizenPage";
-
 import DashboardPage from "./pages/DashboardPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
+function PrivateRoute({ children }) {
 
-function App() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+
+        return <Navigate to="/login" />;
+
+    }
+
+    return children;
+}
+
+export default function App() {
 
     return (
 
         <BrowserRouter>
 
-            <nav>
-
-                <Link to="/">
-                    Citizen
-                </Link>
-
-                {" | "}
-
-                <Link to="/dashboard">
-                    Leader Dashboard
-                </Link>
-
-            </nav>
-
-
             <Routes>
 
                 <Route
-
-                    path="/"
-
-                    element={
-                        <CitizenPage />
-                    }
-
+                    path="/login"
+                    element={<LoginPage />}
                 />
 
+                <Route
+                    path="/register"
+                    element={<RegisterPage />}
+                />
 
                 <Route
-
-                    path="/dashboard"
-
+                    path="/"
                     element={
-                        <DashboardPage />
+                        <PrivateRoute>
+                            <CitizenPage />
+                        </PrivateRoute>
                     }
+                />
 
+                <Route
+                    path="/dashboard"
+                    element={
+                        <PrivateRoute>
+                            <DashboardPage />
+                        </PrivateRoute>
+                    }
                 />
 
             </Routes>
@@ -61,6 +61,3 @@ function App() {
     );
 
 }
-
-
-export default App;

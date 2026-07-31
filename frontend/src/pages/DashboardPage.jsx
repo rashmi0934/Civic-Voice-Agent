@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
     getDashboardSummary,
@@ -9,6 +10,28 @@ import {
 
 
 function DashboardPage() {
+    const navigate = useNavigate();
+
+    const [showProfile, setShowProfile] = useState(false);
+
+    const token = localStorage.getItem("token");
+
+    let user = {
+        name: "",
+        email: "",
+        role: "leader"
+    };
+
+    if (token) {
+        try {
+            user = JSON.parse(atob(token.split(".")[1]));
+        } catch (e) {}
+    }
+
+    const logout = () => {
+        localStorage.removeItem("token");
+        navigate("/login");
+    };
 
     const [dashboard, setDashboard] =
         useState(null);
@@ -271,24 +294,145 @@ function DashboardPage() {
             {/* HEADER */}
             {/* ========================= */}
 
-            <div className="dashboard-header">
+            <div
+                className="dashboard-header"
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "30px"
+                }}
+            >
 
-                <h1>
-                    Civic Voice Dashboard
-                </h1>
+                <div>
 
+                    <h1>
+                        Civic Voice Dashboard
+                    </h1>
 
-                <button
+                </div>
 
-                    onClick={loadDashboard}
-
-                    className="refresh-button"
-
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "15px",
+                        position: "relative"
+                    }}
                 >
 
-                    Refresh Dashboard
+                    <button
+                        onClick={loadDashboard}
+                        className="refresh-button"
+                    >
+                        Refresh Dashboard
+                    </button>
 
-                </button>
+                    <div
+                        onClick={() => setShowProfile(!showProfile)}
+                        style={{
+                            width: "46px",
+                            height: "46px",
+                            borderRadius: "50%",
+                            background: "#2563eb",
+                            color: "white",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            cursor: "pointer",
+                            fontSize: "22px",
+                            fontWeight: "bold"
+                        }}
+                    >
+                        👤
+                    </div>
+
+                    {showProfile && (
+
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: "60px",
+                                right: 0,
+                                width: "280px",
+                                background: "#fff",
+                                borderRadius: "12px",
+                                padding: "18px",
+                                border: "1px solid #ddd",
+                                boxShadow: "0 10px 30px rgba(0,0,0,.2)",
+                                zIndex: 1000
+                            }}
+                        >
+
+                            <div
+                                style={{
+                                    textAlign: "center"
+                                }}
+                            >
+
+                                <div
+                                    style={{
+                                        width: "65px",
+                                        height: "65px",
+                                        margin: "0 auto 12px",
+                                        borderRadius: "50%",
+                                        background: "#2563eb",
+                                        color: "#fff",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        fontSize: "30px"
+                                    }}
+                                >
+                                    👤
+                                </div>
+
+                                <h3>{user.name}</h3>
+
+                                <p
+                                    style={{
+                                        color: "#666",
+                                        wordBreak: "break-word"
+                                    }}
+                                >
+                                    {user.email}
+                                </p>
+
+                                <span
+                                    style={{
+                                        display: "inline-block",
+                                        background: "#e3f2fd",
+                                        color: "#1565c0",
+                                        padding: "5px 12px",
+                                        borderRadius: "20px"
+                                    }}
+                                >
+                                    {user.role}
+                                </span>
+
+                            </div>
+
+                            <button
+                                onClick={logout}
+                                style={{
+                                    width: "100%",
+                                    marginTop: "20px",
+                                    padding: "10px",
+                                    background: "#ef4444",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    cursor: "pointer"
+                                }}
+                            >
+                                Logout
+                            </button>
+
+                        </div>
+
+                    )}
+
+                </div>
 
             </div>
 

@@ -1,7 +1,7 @@
-from app.services.llm_service import LLMService
+from app.services.llm_service import llm_service
 from app.utils.json_parser import JSONParser
 from app.core.agent_response import AgentResponse
-
+from app.core.config import settings
 
 class BaseAgent:
 
@@ -9,7 +9,7 @@ class BaseAgent:
 
         self.name = name
 
-        self.llm_service = LLMService()
+        self.llm_service = llm_service
 
 
     def build_prompt(self, input_data):

@@ -1,16 +1,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from app.core.config import *
+from app.core.config import settings
 
 from sqlalchemy.engine import URL
 
 DATABASE_URL = URL.create(
     drivername="mysql+pymysql",
-    username=DB_USER,
-    password=DB_PASSWORD,
-    host=DB_HOST,
-    port=int(DB_PORT),
-    database=DB_NAME,
+    username=settings.DB_USER,
+    password=settings.DB_PASSWORD,
+    host=settings.DB_HOST,
+    port=int(settings.DB_PORT),
+    database=settings.DB_NAME,
 )
 
 
@@ -24,3 +24,17 @@ SessionLocal = sessionmaker(
 
 Base = declarative_base()
 
+from sqlalchemy.orm import Session
+
+
+def get_db():
+
+    db = SessionLocal()
+
+    try:
+
+        yield db
+
+    finally:
+
+        db.close()
