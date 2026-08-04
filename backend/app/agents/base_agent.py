@@ -30,8 +30,8 @@ class BaseAgent:
             raw_response = self.llm_service.generate(prompt)
 
             parsed_result = JSONParser.parse(raw_response)
-            print("parsed result")
-            print(parsed_result)
+            # print("parsed result")
+            # print(parsed_result)
 
             # JSONParser returns:
             #
