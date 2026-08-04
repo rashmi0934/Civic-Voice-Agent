@@ -25,18 +25,13 @@ class BaseAgent:
 
         try:
 
-            prompt = self.build_prompt(
-
-                input_data
-
-            )
-
+            prompt = self.build_prompt(input_data)
 
             raw_response = self.llm_service.generate(prompt)
 
-
             parsed_result = JSONParser.parse(raw_response)
-
+            print("parsed result")
+            print(parsed_result)
 
             # JSONParser returns:
             #

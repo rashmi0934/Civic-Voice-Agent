@@ -120,6 +120,10 @@ class ValidationAgent(BaseAgent):
     abuse, spam, greetings, and irrelevant input.
     - reason must briefly explain the classification.
 
+    Always return valid JSON.
+    Never return plain text.
+    Never return markdown.
+    Never explain outside the JSON.
     INPUT:
 
     {complaint_text}

@@ -25,19 +25,9 @@ class AgentManager:
     # Validation
     # -----------------------------
 
-    def validate_complaint(
+    def validate_complaint(self, complaint_text: str):
 
-        self,
-
-        complaint_text: str
-
-    ):
-
-        result = validation_agent.run(
-
-            complaint_text
-
-        )
+        result = validation_agent.run(complaint_text)
 
         print(
 
@@ -192,16 +182,13 @@ class AgentManager:
     # Main Pipeline
     # -----------------------------
 
-    def submit_complaint(
-
-        self,
-
-        complaint_text: str
-
-    ):
-
+    def submit_complaint(self, complaint_text: str):
+        # =============================
+        print("Complaint text: ")
+        print(complaint_text)
+        # =============================
+        
         db = self.get_db()
-
 
         try:
 
@@ -211,13 +198,7 @@ class AgentManager:
 
             start = time.time()
 
-
-            validation = self.validate_complaint(
-
-                complaint_text
-
-            )
-
+            validation = self.validate_complaint(complaint_text)
 
             print(
 
@@ -363,103 +344,103 @@ class AgentManager:
                 }
 
 
-            # =============================
-            # STEP 3: REQUIRED FIELD CHECK
-            # =============================
+            # # =============================
+            # # STEP 3: REQUIRED FIELD CHECK
+            # # =============================
 
-            required_fields = {
+            # required_fields = {
 
-                "category":
+            #     "category":
 
-                "category",
+            #     "category",
 
-                "urgency":
+            #     "urgency":
 
-                "urgency",
+            #     "urgency",
 
-                "location":
+            #     "location":
 
-                "location",
+            #     "location",
 
-                "affected_people":
+            #     "affected_people":
 
-                "affected people",
+            #     "affected people",
 
-                "action_requested":
+            #     "action_requested":
 
-                "requested action"
+            #     "requested action"
 
-            }
-
-
-            missing_fields = []
+            # }
 
 
-            for field, display_name in (
-
-                required_fields.items()
-
-            ):
-
-                value = processed_data.get(
-
-                    field
-
-                )
-
-                invalid_values = [
-                    "unknown",
-                    "not provided",
-                    "not specified",
-                    "none",
-                    "null",
-                    "my area",
-                    "area",
-                    "nearby",
-                    "here",
-                    "there",
-                    "our area",
-                    "my area",
-                    "this area",
-                    "local area"
-                ]
+            # missing_fields = []
 
 
-                if (
+            # for field, display_name in (
 
-                    value is None
+            #     required_fields.items()
 
-                    or
+            # ):
 
-                    str(value).strip() == ""
+            #     value = processed_data.get(
 
-                    or
+            #         field
 
-                    str(value).lower().strip() in invalid_values
+            #     )
 
-                ):
+            #     invalid_values = [
+            #         "unknown",
+            #         "not provided",
+            #         "not specified",
+            #         "none",
+            #         "null",
+            #         "my area",
+            #         "area",
+            #         "nearby",
+            #         "here",
+            #         "there",
+            #         "our area",
+            #         "my area",
+            #         "this area",
+            #         "local area"
+            #     ]
 
-                    missing_fields.append(display_name)
+
+            #     if (
+
+            #         value is None
+
+            #         or
+
+            #         str(value).strip() == ""
+
+            #         or
+
+            #         str(value).lower().strip() in invalid_values
+
+            #     ):
+
+            #         missing_fields.append(display_name)
 
 
-            if missing_fields:
+            # if missing_fields:
 
-                return {
+            #     return {
 
-                    "success": False,
+            #         "success": False,
 
-                    "message":
+            #         "message":
 
-                    "Complaint not submitted.",
+            #         "Complaint not submitted.",
 
-                    "missing_fields":
+            #         "missing_fields":
 
-                    missing_fields,
+            #         missing_fields,
 
-                    "reason":
+            #         "reason":
 
-                    f"Missing required information: {', '.join(missing_fields)}"
-                }
+            #         f"Missing required information: {', '.join(missing_fields)}"
+            #     }
 
 
             # =============================

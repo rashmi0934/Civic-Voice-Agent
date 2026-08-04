@@ -1,5 +1,5 @@
 from app.agents.base_agent import BaseAgent
-
+from app.core.agent_response import AgentResponse
 
 class DuplicateAgent(BaseAgent):
 
@@ -11,12 +11,12 @@ class DuplicateAgent(BaseAgent):
 
         new_complaint = input_data["new_complaint"]
 
-        existing_complaints = input_data[
-            "existing_complaints"
-        ]
+        existing_complaints = input_data["existing_complaints"]
 
-
-        existing_text = "\n".join(
+        if not existing_complaints:
+            existing_text = "NO EXISTING COMPLAINTS IN DATABASE."
+        else:
+            existing_text = "\n".join(
 
             f"Database ID: {complaint['id']}\n"
             f"Complaint: {complaint['text']}\n"
@@ -99,6 +99,22 @@ class DuplicateAgent(BaseAgent):
     """
 
     def run(self, input_data: dict):
+
+        existing_complaints = input_data["existing_complaints"]
+
+        if len(existing_complaints) == 0:
+
+            return AgentResponse(
+                success=True,
+                agent=self.name,
+                data={
+                    "is_duplicate": False,
+                    "duplicate_index": None,
+                    "confidence": 0.0,
+                    "reason": "No existing complaints."
+                },
+                error=None
+            )
 
         return self.execute(input_data)
 

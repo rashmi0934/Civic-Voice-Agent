@@ -6,6 +6,7 @@ import os
 import tempfile
 
 from app.services.speech_service import speech_service
+from app.agents.transcription_agent import (transcription_correction_agent)
 
 from datetime import datetime
 from app.managers.agent_manager import agent_manager
@@ -19,16 +20,11 @@ router = APIRouter()
 
 
 @router.post("/")
-def submit_complaint(
-    complaint: ComplaintCreate,
-    current_user=Depends(get_current_user)
+def submit_complaint(complaint: ComplaintCreate,
+                     current_user=Depends(get_current_user)
 ):
-
-    result = agent_manager.submit_complaint(
-
-        complaint.complaint_text
-
-    )
+    print(complaint)
+    result = agent_manager.submit_complaint(complaint.complaint_text)
 
     return result
 
@@ -95,11 +91,22 @@ async def submit_voice_complaint(
         )
 
 
-        transcribed_text = (
+        transcribed_text = (transcription["text"])
 
-            transcription["text"]
-
+        correction = transcription_correction_agent.run(
+            transcribed_text
         )
+
+        print("\n===== CORRECTED TEXT =====")
+
+        if correction.success:
+            transcribed_text = correction.data["corrected_text"]
+            print(transcribed_text)
+        # else:
+        #     print("Correction failed.")
+        #     print(correction.error)
+
+        print("==========================")
 
 
         detected_language = (

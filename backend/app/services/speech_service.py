@@ -75,6 +75,10 @@ class SpeechService:
 
         ).strip()
 
+        print("\n===== TRANSCRIBED TEXT =====")
+        print(transcribed_text)
+        print("Detected language:", info.language)
+        print("============================")
 
         return {
 

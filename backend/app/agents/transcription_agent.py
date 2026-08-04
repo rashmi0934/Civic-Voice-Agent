@@ -31,9 +31,20 @@ class TranscriptionCorrectionAgent(
 
         return f"""
 
-You are a speech transcription correction agent.
+You are an expert multilingual speech transcription correction agent.
 
 A speech-to-text model has converted a citizen's voice complaint into text.
+
+The complaint may be in:
+
+- English
+- Hindi
+- Hinglish
+- Urdu
+- Punjabi
+
+or other languages
+Your job is ONLY to correct transcription mistakes.
 
 The transcription may contain words that sound similar to the
 correct words.
@@ -59,6 +70,16 @@ unless they are clearly a speech recognition error.
 
 8. Do not include explanations.
 
+IMPORTANT:
+
+If the transcription is in Urdu script but the language is Hindi,
+convert it to standard Hindi written in Devanagari.
+
+If the input is Hinglish,
+keep it in simple English letters.
+
+Never return Urdu script unless the speaker was actually speaking Urdu.
+
 Return this exact JSON format:
 
 {{
@@ -72,7 +93,6 @@ Original transcription:
 
 """
 
-
     def run(
 
         self,
@@ -80,7 +100,8 @@ Original transcription:
         transcribed_text: str
 
     ):
-
+        # print("Transcription agent output: ")
+        # print(transcribed_text)
         return self.execute({
 
             "transcribed_text":
